@@ -17,7 +17,7 @@
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:76px}
-body{margin:0;background:var(--ink);color:var(--ivory);font:400 17px/1.7 var(--sans);overflow-x:hidden;padding-bottom:78px}
+body{margin:0;background:var(--ink);color:var(--ivory);font:400 17px/1.7 var(--sans);overflow-x:clip;padding-bottom:78px}
 body.lock{overflow:hidden}
 img{max-width:100%;display:block}
 a{color:inherit}
@@ -52,7 +52,9 @@ section .eyebrow{color:var(--gold)}
 
 /* ---------- шапка ---------- */
 header{position:fixed;top:0;left:0;right:0;z-index:30;transition:background .45s,backdrop-filter .45s,border-color .45s;border-bottom:1px solid transparent}
-header.solid{background:rgba(10,7,8,.8);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+header.solid{background:var(--ink);border-bottom-color:var(--line)}
+/* заливка над шапкой: в iOS-Safari при сворачивании адресной строки над fixed-шапкой иногда остаётся щель с контентом */
+header.solid::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:100vh;background:var(--ink)}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px var(--pad);min-height:68px;max-width:1500px;margin:0 auto}
 .logo{display:flex;flex-direction:column;text-decoration:none;font:italic 400 28px/1 var(--serif);color:var(--ivory)}
 .logo small{font:600 9px/1 var(--sans);letter-spacing:.42em;text-transform:uppercase;color:var(--gold);margin-top:5px;font-style:normal}
@@ -111,21 +113,24 @@ section{padding:clamp(88px,12vw,180px) var(--pad);position:relative}
 .facts li{padding:34px 0;border-bottom:1px solid var(--line);color:var(--mute);font-size:14px;letter-spacing:.04em}
 .facts b{display:block;font:italic 400 clamp(52px,7.2vw,112px)/1 var(--serif);color:var(--gold);margin-bottom:10px;letter-spacing:-.01em}
 
-/* ---------- услуги: карточки-«страницы» ---------- */
+/* ---------- услуги: прайс-лист, разделённый тонкими линиями (без «карточек») ---------- */
 .services{background:var(--ink-2);padding-left:0;padding-right:0}
 .services .sec-head,.services .svc-foot{padding:0 var(--pad)}
-.cards{counter-reset:s;padding:0 var(--pad)}
-.card{counter-increment:s;position:relative;display:grid;gap:26px;padding:20px 20px 32px;margin-bottom:18px;border-radius:24px;background:linear-gradient(160deg,#1b0c12,#0f080b);border:1px solid var(--line);overflow:hidden}
-.card:nth-child(even){background:linear-gradient(160deg,#2a0f1a,#150910)}
-.card .ph{aspect-ratio:4/5;border-radius:14px}
-.card h3{font-size:clamp(40px,11vw,60px);line-height:1;margin-bottom:14px}
-.card h3::before{content:"0" counter(s);display:block;font:600 12px/1 var(--sans);letter-spacing:.24em;color:var(--gold);margin-bottom:16px}
-.card p{margin-bottom:0;max-width:40ch}
+.cards{counter-reset:s;max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.card{counter-increment:s;display:grid;grid-template-columns:1fr;grid-template-areas:"h" "ph" "p" "r";padding:40px 0 44px;border-top:1px solid var(--line)}
+.card:last-child{border-bottom:1px solid var(--line)}
+.card>div:not(.ph){display:contents}
+.card h3{grid-area:h;display:flex;align-items:baseline;gap:16px;font-size:clamp(36px,10vw,56px);line-height:1;margin:0 0 24px}
+.card h3::before{content:"0" counter(s);flex:none;font:500 12px/1 var(--sans);letter-spacing:.2em;color:var(--gold)}
+.card .ph{grid-area:ph;aspect-ratio:4/3;border-radius:2px;margin-bottom:22px}
+.card p{grid-area:p;margin:0;max-width:44ch;color:var(--mute)}
+.card .rows{grid-area:r}
+.card .rows li:last-child{border-bottom:0}
 .rows{list-style:none;margin:22px 0 0;padding:0}
 .rows li{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:14px 0;border-top:1px solid var(--line);color:rgba(244,236,226,.9);font-size:16px}
 .rows li:last-child{border-bottom:1px solid var(--line)}
 .rows b{font:500 italic 22px/1 var(--serif);color:var(--gold);white-space:nowrap}
-.card .ph img{transform:scale(1.14);transition:transform 2.2s var(--ease)}
+.card .ph img{transform:scale(1.06);transition:transform 2.2s var(--ease)}
 .card.seen .ph img{transform:scale(1)}
 
 /* фото */
@@ -258,7 +263,15 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:cen
 
 /* ---------- телефон: липкая панель уже содержит Instagram ---------- */
 @media (max-width:899px){
-  .hero{padding-bottom:104px}
+  header{background:var(--ink);border-bottom-color:var(--line)}
+  header::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:100vh;background:var(--ink)}
+  /* hero: сначала фото Анны, под ним текст — без надписей поверх лица */
+  .hero{min-height:0;justify-content:flex-start;padding:69px 0 104px}
+  .hero-img{position:relative;inset:auto;z-index:0;height:64svh;min-height:380px;max-height:620px}
+  .hero-img::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,rgba(10,7,8,0),var(--ink))}
+  .hero::after{display:none}
+  .hero-in{padding:0 var(--pad);margin-top:-28px}
+  .hero h1{font-size:clamp(72px,23vw,140px)}
   .hero .btns .btn:not(.solid){display:none}
   .contact .btns .btn{width:100%;max-width:420px}
   .flinks{margin-left:-10px}
@@ -304,18 +317,14 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:cen
   .incl ul{gap:0 72px}
   .gallery button:nth-child(even){margin-top:46px}
 }
-/* стопка карточек услуг — только на достаточно большом экране */
-@media (min-width:900px) and (min-height:640px){
-  .cards{padding:0;margin:0}
-  .card{position:sticky;top:0;height:100svh;min-height:600px;margin:0;grid-template-columns:1fr 1fr;align-items:center;gap:6vw;padding:0 calc(max(var(--pad),(100vw - var(--max))/2) + 20px);border-radius:34px 34px 0 0;border:0;border-top:1px solid var(--line);box-shadow:0 -30px 80px rgba(0,0,0,.65)}
-  .card:nth-child(even) .ph{order:2}
-  .card .ph{aspect-ratio:3/4;height:min(76svh,740px);justify-self:center;border-radius:6px}
-  .card h3{font-size:clamp(54px,6vw,100px);margin-bottom:20px}
-  .card::after{content:"0" counter(s);position:absolute;right:3vw;bottom:-4vw;font:italic 400 30vw/1 var(--serif);color:rgba(220,194,148,.045);pointer-events:none}
-  .card>div:last-child{position:relative;z-index:1}
+/* прайс-лист на широком экране: фото | название и описание | цены */
+@media (min-width:900px){
+  .card{grid-template-columns:minmax(200px,280px) 1fr minmax(260px,380px);grid-template-rows:auto 1fr;grid-template-areas:"ph h r" "ph p r";column-gap:clamp(36px,5vw,80px);align-items:start;padding:56px 0}
+  .card .ph{aspect-ratio:4/5;margin:0}
+  .card h3{font-size:clamp(44px,4.4vw,70px);margin-bottom:18px}
   .card p{font-size:18px}
+  .card .rows{margin-top:0}
   .card .rows li{font-size:17px}
-  .services .svc-foot{position:relative;z-index:2;background:var(--ink-2);margin:0;max-width:none;padding:clamp(60px,8vw,110px) max(var(--pad),calc((100vw - var(--max))/2))}
 }
 
 /* ---------- ≥ 1400 ---------- */
